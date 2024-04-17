@@ -1,14 +1,14 @@
-package framework.fpga.vc707
+package framework.fpga.vcu118
 
 import freechips.rocketchip.devices.debug.DebugModuleKey
-import freechips.rocketchip.diplomacy._
-import org.chipsalliance.cde.config._
+import freechips.rocketchip.devices.tilelink.BootROMLocated
+import freechips.rocketchip.diplomacy.{DTSTimebase, SimpleLazyModule}
+import freechips.rocketchip.subsystem.{ExtMem, SystemBusKey}
+import freechips.rocketchip.tile.XLen
+import org.chipsalliance.cde.config.{Config, Parameters}
 import sifive.blocks.devices.uart.{PeripheryUARTKey, UARTParams}
 import sifive.fpgashells.shell.DesignKey
 import testchipip.SerialTLKey
-import freechips.rocketchip.devices.tilelink.BootROMLocated
-import freechips.rocketchip.subsystem._
-import freechips.rocketchip.tile.XLen
 
 import scala.sys.process._
 
@@ -50,35 +50,35 @@ class WithDTS extends Config((site, here, up) => {
 })
 
 class WithDDR extends Config((site, here, up) => {
-  case ExtMem => up(ExtMem, site).map(x => x.copy(master = x.master.copy(size = site(VC7071GDDRSize)))) // set extmem
+  case ExtMem => up(ExtMem, site).map(x => x.copy(master = x.master.copy(size = site(VCU118DDRSize)))) // set extmem
 })
 
-class WithVC707Tweaks extends Config(
+class WithVCU118Tweaks extends Config(
   // Clock configs
   new chipyard.harness.WithAllClocksFromHarnessClockInstantiator ++
-  new chipyard.harness.WithHarnessBinderClockFreqMHz(100) ++
-  new chipyard.config.WithMemoryBusFrequency(100.0) ++
-  new chipyard.config.WithSystemBusFrequency(100.0) ++
-  new chipyard.config.WithPeripheryBusFrequency(100.0) ++
-  new chipyard.harness.WithAllClocksFromHarnessClockInstantiator ++
-  new chipyard.clocking.WithPassthroughClockGenerator ++
-  // Harness Binder
-  new WithVC707UART ++
-  new WithVC707DDRTL ++
-  new WithVC707JTAG ++
-  // Peripheris
-  new WithUART ++
-  new WithDebug ++
-  new WithDTS ++
-  new WithDDR ++
-  // Other configurations
-  new WithNoDesignKey ++
-  new WithNoSerialTL ++
-  new WithSimpleBootROM ++
-  new chipyard.config.WithTLBackingMemory ++ // FPGA-shells converts the AXI to TL for us
-  new freechips.rocketchip.subsystem.WithoutTLMonitors)
+    new chipyard.harness.WithHarnessBinderClockFreqMHz(100) ++
+    new chipyard.config.WithMemoryBusFrequency(100.0) ++
+    new chipyard.config.WithSystemBusFrequency(100.0) ++
+    new chipyard.config.WithPeripheryBusFrequency(100.0) ++
+    new chipyard.harness.WithAllClocksFromHarnessClockInstantiator ++
+    new chipyard.clocking.WithPassthroughClockGenerator ++
+    // Harness Binder
+    new WithVCU118UART ++
+    new WithVCU118DDRTL ++
+    new WithVCU118JTAG ++
+    // Peripheris
+    new WithUART ++
+    new WithDebug ++
+    new WithDTS ++
+    new WithDDR ++
+    // Other configurations
+    new WithNoDesignKey ++
+    new WithNoSerialTL ++
+    new WithSimpleBootROM ++
+    new chipyard.config.WithTLBackingMemory ++ // FPGA-shells converts the AXI to TL for us
+    new freechips.rocketchip.subsystem.WithoutTLMonitors)
 
-class SmallRocketVC707Config extends Config(
-  new WithVC707Tweaks ++
+class SmallRocketVCU118Config extends Config(
+  new WithVCU118Tweaks ++
   new chipyard.config.WithBroadcastManager ++ // no l2
   new chipyard.SmallRocketConfig)

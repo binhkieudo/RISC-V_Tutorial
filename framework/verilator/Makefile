@@ -89,7 +89,7 @@ RUNTIME_PROFILING_VFLAGS := $(if $(filter $(VERILATOR_PROFILE),all),\
                               $(if $(filter $(VERILATOR_PROFILE),threads),\
 								--prof-threads,))
 
-VERILATOR_THREADS ?= 1
+VERILATOR_THREADS ?= 16
 RUNTIME_THREADS := --threads $(VERILATOR_THREADS) --threads-dpi all
 
 USE_FST ?= 0
@@ -226,6 +226,9 @@ $(output_dir)/%.vpd: $(output_dir)/% $(sim_debug)
 #########################################################################################
 .PHONY: clean clean-sim clean-sim-debug
 clean:
+	rm -rf ./output
+	rm *.riscv
+	rm -f ../../.classpath_cache/*
 	rm -rf $(CLASSPATH_CACHE) $(gen_dir) $(sim_prefix)-*
 
 clean-sim:

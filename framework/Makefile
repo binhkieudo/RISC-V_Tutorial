@@ -14,7 +14,7 @@ sim_name := none
 #########################################################################################
 # include shared variables
 #########################################################################################
-SUB_PROJECT ?= vc707_rocketsmall
+SUB_PROJECT ?= vcu118_rocketsmall
 
 #########################################################################################
 # My configuration
@@ -48,6 +48,19 @@ ifeq ($(SUB_PROJECT),vc707_rocketsmall)
 	FPGA_BRAND        ?= xilinx
 endif
 
+ifeq ($(SUB_PROJECT),vcu118_rocketsmall)
+	SBT_PROJECT       ?= framework
+	MODEL             ?= VCU118Harness
+	VLOG_MODEL        ?= VCU118Harness
+	MODEL_PACKAGE     ?= framework.fpga.vcu118
+	CONFIG            ?= SmallRocketVCU118Config
+	CONFIG_PACKAGE    ?= framework.fpga.vcu118
+	GENERATOR_PACKAGE ?= chipyard
+	TB                ?= none # unused
+	TOP               ?= ChipTop
+	BOARD             ?= vcu118
+	FPGA_BRAND        ?= xilinx
+endif
 ################### End my configurations #################################################
 
 include $(base_dir)/variables.mk
@@ -128,13 +141,26 @@ download_bitstream:
 		vivado -mode batch -nolog -nojournal -notrace \
 			-source $(sim_dir)/src/main/resources/arty100t/program.tcl \
 			-tclargs $(build_dir)/obj/$(MODEL).bit; \
+	elif [ $(BOARD) = vc707 ]; then \
+		vivado -mode batch -nolog -nojournal -notrace \
+			-source $(sim_dir)/src/main/resources/vc707/program.tcl \
+			-tclargs $(build_dir)/obj/$(MODEL).bit; \
 	else \
-		echo "Not defined"; \
+		vivado -mode batch -nolog -nojournal -notrace \
+			-source $(sim_dir)/scripts/program.tcl \
+			-tclargs $(build_dir)/obj/$(MODEL).bit; \
     fi
+
 
 .PHONY: clean_cache
 clean_cache:
-	rm $(base_dir)/.classpath_cache/*
+	rm -f $(base_dir)/.classpath_cache/*
+
+.PHONY: gen_config
+gen_config:
+	rm -f ./config/*
+	ln -s $(base_dir)/generators/chipyard/src/main/scala/config/RoCCTutorialConfig.scala $(sim_dir)/config/
+	ln -s $(base_dir)/generators/chipyard/src/main/scala/config/CustomCoresConfig.scala $(sim_dir)/config/
 
 .PHONY: everything
 everything: bitstream download_bitstream
@@ -144,5 +170,5 @@ everything: bitstream download_bitstream
 #########################################################################################
 .PHONY: clean
 clean:
-	rm $(base_dir)/.classpath_cache/*
+	rm -f $(base_dir)/.classpath_cache/*
 	rm -rf $(gen_dir)

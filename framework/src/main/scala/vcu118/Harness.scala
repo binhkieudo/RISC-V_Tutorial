@@ -1,4 +1,4 @@
-package framework.fpga.vc707
+package framework.fpga.vcu118
 
 import chipyard.ExtTLMem
 import chipyard.harness.HasHarnessInstantiators
@@ -12,8 +12,7 @@ import sifive.blocks.devices.uart.{PeripheryUARTKey, UARTParams, UARTPortIO}
 import sifive.fpgashells.clocks.{ClockGroup, ClockSinkNode, PLLFactoryKey, ResetWrangler}
 import sifive.fpgashells.shell.{ClockInputDesignInput, ClockInputOverlayKey, DDRDesignInput, DDROverlayKey, JTAGDebugDesignInput, JTAGDebugOverlayKey, LEDDesignInput, LEDOverlayKey, UARTDesignInput, UARTOverlayKey}
 
-class VC707Harness(override implicit val p: Parameters) extends VC707CustomShell {
-
+class VCU118Harness(override implicit val p: Parameters) extends VCU118CustomShell {
   def dp = designParameters
 
   // ========= Clock =================
@@ -27,17 +26,17 @@ class VC707Harness(override implicit val p: Parameters) extends VC707CustomShell
   // create and connect to the dutClock
   val dutFreqMHz = (dp(SystemBusKey).dtsFrequency.get / (1000 * 1000)).toInt
   val dutClock = ClockSinkNode(freqMHz = dutFreqMHz)
-  println(s"VC707 FPGA Base Clock Freq: ${dutFreqMHz} MHz")
+  println(s"VCU118 FPGA Base Clock Freq: ${dutFreqMHz} MHz")
   val dutWrangler = LazyModule(new ResetWrangler)
   val dutGroup = ClockGroup()
   dutClock := dutWrangler.node := dutGroup := harnessSysPLLNode
 
-  // ========= UART =================
+  // ========= UART ==================
   val io_uart_bb = BundleBridgeSource(() => new UARTPortIO(dp(PeripheryUARTKey).headOption.getOrElse(UARTParams(0))))
   val uartOverlay = dp(UARTOverlayKey).head.place(UARTDesignInput(io_uart_bb))
 
   // ========== DDR =================
-  val ddrOverlay = dp(DDROverlayKey).head.place(DDRDesignInput(dp(ExtTLMem).get.master.base, dutWrangler.node, harnessSysPLLNode, true)).asInstanceOf[DDRVC707PlacedOverlay]
+  val ddrOverlay = dp(DDROverlayKey).head.place(DDRDesignInput(dp(ExtTLMem).get.master.base, dutWrangler.node, harnessSysPLLNode, true)).asInstanceOf[DDRVCU118PlacedOverlay]
   val ddrClient = TLClientNode(Seq(TLMasterPortParameters.v1(Seq(TLMasterParameters.v1(
     name = "chip_ddr",
     sourceId = IdRange(0, 1 << dp(ExtTLMem).get.master.idBits)
@@ -45,17 +44,16 @@ class VC707Harness(override implicit val p: Parameters) extends VC707CustomShell
   val ddrBlockDuringReset = LazyModule(new TLBlockDuringReset(4))
   ddrOverlay.overlayOutput.ddr := ddrBlockDuringReset.node := ddrClient
 
-  // ========= Status LED =================
+  // ========= Status LED ============
   val ledStatusOverlays = dp(LEDOverlayKey).map(_.place(LEDDesignInput()))
   val status_leds = ledStatusOverlays.map(_.overlayOutput.led)
 
-  // ========= JTAG =======================
+  // ========= JTAG ==================
   val jtagOverlay = dp(JTAGDebugOverlayKey).head.place(JTAGDebugDesignInput()).overlayOutput.jtag
 
-  // ====== Module implementation =========
+  // ====== Module implementation ====
   override lazy val module = new HarnessLikeImpl
-  class HarnessLikeImpl extends Impl with HasHarnessInstantiators
-  {
+  class HarnessLikeImpl extends Impl with HasHarnessInstantiators {
     val clk_tick = clockOverlay.overlayOutput.node.out.head._1.clock
 
     // Blink the status LEDs for sanity
@@ -82,10 +80,11 @@ class VC707Harness(override implicit val p: Parameters) extends VC707CustomShell
     ddrOverlay.mig.module.clock := harnessBinderClock
     ddrOverlay.mig.module.reset := harnessBinderReset
     ddrBlockDuringReset.module.clock := harnessBinderClock
-    ddrBlockDuringReset.module.reset := harnessBinderReset.asBool || !ddrOverlay.mig.module.io.port.init_calib_complete
+    ddrBlockDuringReset.module.reset := harnessBinderReset.asBool || !ddrOverlay.mig.module.io.port.c0_init_calib_complete
 
-    status_leds(1) := ddrOverlay.mig.module.io.port.init_calib_complete
+    status_leds(1) := ddrOverlay.mig.module.io.port.c0_init_calib_complete
 
     instantiateChipTops()
   }
+
 }
