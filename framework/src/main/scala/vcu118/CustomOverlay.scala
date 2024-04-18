@@ -149,7 +149,7 @@ class JTAGDebugVCU118PlacedOverlay(val shell: VCU118ShellCustomOverlays, name: S
   extends JTAGDebugXilinxPlacedOverlay(name, designInput, shellInput)
 {
   shell { InModuleBody {
-    val pin_locations = Seq("AW15",      "AU16",      "AV16",      "AY14",      "AY15")
+    val pin_locations = Seq("AV15", "AY14", "AY15", "AW15", "AV16")
     val pins      = Seq(io.jtag_TCK, io.jtag_TMS, io.jtag_TDI, io.jtag_TDO, io.srst_n)
 
     shell.sdc.addClock("JTCK", IOPin(io.jtag_TCK), 10)

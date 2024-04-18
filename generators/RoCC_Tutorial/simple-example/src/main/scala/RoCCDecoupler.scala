@@ -48,6 +48,7 @@ class RoCCDecoupler (xLen: Int = 64)(implicit p: Parameters) extends Module {
   io.rocc_io.mem.req.bits.no_xcpt   := false.B
   io.rocc_io.mem.req.bits.data      := 0.U
   io.rocc_io.mem.req.bits.mask      := 0.U
+  // Memory response
   io.rocc_io.mem.s1_kill            := false.B
   io.rocc_io.mem.s1_data.data       := 0.U
   io.rocc_io.mem.s1_data.mask       := 0.U

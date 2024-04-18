@@ -145,6 +145,10 @@ download_bitstream:
 		vivado -mode batch -nolog -nojournal -notrace \
 			-source $(sim_dir)/src/main/resources/vc707/program.tcl \
 			-tclargs $(build_dir)/obj/$(MODEL).bit; \
+	elif [ $(BOARD) = vcu118 ]; then \
+		vivado -mode batch -nolog -nojournal -notrace \
+			-source $(sim_dir)/src/main/resources/vcu118/program.tcl \
+			-tclargs $(build_dir)/obj/$(MODEL).bit; \
 	else \
 		vivado -mode batch -nolog -nojournal -notrace \
 			-source $(sim_dir)/scripts/program.tcl \

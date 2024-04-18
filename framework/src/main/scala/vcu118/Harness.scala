@@ -68,7 +68,7 @@ class VCU118Harness(override implicit val p: Parameters) extends VCU118CustomShe
       status_leds(2) := on
     }
 
-    status_leds(0) := resetPin
+    status_leds(0) := !resetPin
 
     harnessSysPLL.plls.foreach(_._1.getReset.get := pllReset)
 
