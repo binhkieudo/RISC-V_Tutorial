@@ -137,7 +137,7 @@ debug-bitstream: $(build_dir)/obj/post_synth.dcp
 
 .PHONY: download_bitstream
 download_bitstream:
-	if [ $(BOARD) = arty_a7_100 ]; then \
+	if [ $(BOARD) = arty_a7_200 ]; then \
 		vivado -mode batch -nolog -nojournal -notrace \
 			-source $(sim_dir)/src/main/resources/arty100t/program.tcl \
 			-tclargs $(build_dir)/obj/$(MODEL).bit; \
